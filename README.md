@@ -16,24 +16,25 @@ GNU General Public License v3.0.
 # How to build:
 1. Download latest snapshot of OGDF.
 
-    wget -O ogdf-snapshot.zip http://www.ogdf.net/lib/exe/fetch.php/tech:ogdf-snapshot-2015-12-04.zip
+        wget -O ogdf-snapshot.zip http://www.ogdf.net/lib/exe/fetch.php/tech:ogdf-snapshot-2015-12-04.zip
 
 2. Extract it in current working directory.
 
-    unzip ogdf-snapshot.zip
+        unzip ogdf-snapshot.zip
 
 3. Build libraries
 
-    cd ogdf-snapshot
-    cmake .
-    make
+        cd ogdf-snapshot
+        cmake .
+        make
     
 4. Build MATLAB mex wrapper. In MATLAB run:
 
-    mex -O -largeArrayDims -IOGDF-snapshot/include/ -LOGDF-snapshot -lOGDF -lCOIN TricComp.cpp -v
+        mex -O -largeArrayDims -IOGDF-snapshot/include/ -LOGDF-snapshot -lOGDF -lCOIN TricComp.cpp -v
 
 5. Run tests. In MATLAB run:
-    TricComp_tests
+
+        TricComp_tests
 
 # How to use
 
