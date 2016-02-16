@@ -22,12 +22,12 @@ void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n)
 
     // Iterate over upper triangular matrix.
     // TODO: Refactor.
-    for (i = 1; i <= n; i++) {
-        for (j = jc[i - 1]; j < jc[i]; j++) {
-            if (ir[j] <= (i-1)) {
+    for (i = 0; i < n; i++) {
+        for (j = jc[i]; j < jc[i+1]; j++) {
+            if (ir[j] <= i) {
                 continue;    
             }
-            G.newEdge(nodes.at(i - 1), nodes.at(ir[j]));
+            G.newEdge(nodes.at(i), nodes.at(ir[j]));
         }
     }
 }
