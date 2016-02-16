@@ -1,19 +1,19 @@
-# About
+## About
 This code allows computation of triconnected components of graph in MATLAB with help of [Open Graph Drawing Framework](http://www.ogdf.net).
 
-# TODO
+## TODO
 - Conversion from internal representation to MATLAB matrices.
 
-# Disclaimer
+## Disclaimer
 This project is in **alpha** phase:
 
 - API may be a subject of drastic changes. 
 - Bug reports, feature requests and pull requests are welcome.
 
-# License:
+## License:
 GNU General Public License v3.0.
 
-# How to build:
+## How to build
 1. Download latest snapshot of OGDF.
 
         wget -O ogdf-snapshot.zip http://www.ogdf.net/lib/exe/fetch.php/tech:ogdf-snapshot-2015-12-04.zip
@@ -36,7 +36,7 @@ GNU General Public License v3.0.
 
         >> TricComp_tests
 
-# How to use
+## How to use
 
     TricComp(G)
     
