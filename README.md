@@ -30,11 +30,11 @@ GNU General Public License v3.0.
     
 4. Build MATLAB mex wrapper. In MATLAB run:
 
-        mex -O -largeArrayDims -IOGDF-snapshot/include/ -LOGDF-snapshot -lOGDF -lCOIN TricComp.cpp -v
+        >> mex -O -largeArrayDims -IOGDF-snapshot/include/ -LOGDF-snapshot -lOGDF -lCOIN TricComp.cpp -v
 
 5. Run tests. In MATLAB run:
 
-        TricComp_tests
+        >> TricComp_tests
 
 # How to use
 
