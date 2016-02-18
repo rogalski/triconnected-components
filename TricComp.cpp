@@ -63,8 +63,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     ogdf::TricComp tricComp(G);
     unsigned int foundComponents = tricComp.m_numComp;
 
-    // get output matrix size
-    // TODO: May it be done cleaner?
+    // Get output matrix size. TODO: May it be done cleaner?
     unsigned int maxTriconnectedComponentSize = 0;
     unsigned int numTriconnectedComponents = 0;
     for (unsigned int i = 0; i < foundComponents; i++) {
@@ -90,7 +89,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         ogdf::TricComp::CompStruct component = tricComp.m_component[i];
         ogdf::List <ogdf::edge> edges = component.m_edges;
         if (shouldTriconnectedComponentBeSkipped(component)) {
-            continue;  // TODO: Some components has zero edges, why?
+            continue;
         }
         unsigned j = 0;
         for (auto &e: edges) {
