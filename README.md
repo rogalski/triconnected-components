@@ -2,12 +2,14 @@
 This code allows computation of triconnected components of graph in MATLAB with help of [Open Graph Drawing Framework](http://www.ogdf.net).
 
 ## TODO
-- Conversion from internal representation to MATLAB matrices.
+- Performance evaluation
+- Selection of best API
 
 ## Disclaimer
 This project is in **alpha** phase:
 
 - API may be a subject of drastic changes. 
+- Currently only undirected graph without loops are supported. 
 - Bug reports, feature requests and pull requests are welcome.
 
 ## License:
@@ -38,5 +40,4 @@ GNU General Public License v3.0.
 
 ## How to use
 
-    TricComp(G)
-    
+    help TricComp    
