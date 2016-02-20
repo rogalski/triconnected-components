@@ -8,6 +8,8 @@
 #define CMP_MX (plhs[0])
 #define TYP_MX (plhs[1])
 
+static const bool checkComp = false;
+
 void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n) {
     mwIndex i, j, *jc, *ir;
 
@@ -104,8 +106,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         componentNum++;
     }
-
-    if (!tricComp.checkComp()) {
+    if (checkComp && !tricComp.checkComp()) {
         mexWarnMsgIdAndTxt("MATLAB:triccomp:invout",
                            "TricComp(G).checkComp() returned false.");
     }
