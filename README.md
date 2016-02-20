@@ -1,6 +1,8 @@
 ## About
 This code allows computation of triconnected components of graph in MATLAB with help of [Open Graph Drawing Framework](http://www.ogdf.net).
 
+[![Build Status](https://travis-ci.org/rogalski/triconnected-components.svg?branch=master)](https://travis-ci.org/rogalski/triconnected-components)
+
 ## TODO
 - Performance evaluation
 - Selection of best API
@@ -12,7 +14,7 @@ This project is in **alpha** phase:
 - Currently only undirected graph without loops are supported. 
 - Bug reports, feature requests and pull requests are welcome.
 
-## License:
+## License
 GNU General Public License v3.0.
 
 ## How to build
