@@ -1,7 +1,7 @@
 language: cpp
 before_install:
-	- sudo apt-get update -qq
-	- sudo apt-get install -qq cppcheck
-    - wget -O ogdf-snapshot.zip http://www.ogdf.net/lib/exe/fetch.php/tech:ogdf-snapshot-2015-12-04.zip
-    - unzip ogdf-snapshot.zip
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq cppcheck
+   - wget -O ogdf-snapshot.zip http://www.ogdf.net/lib/exe/fetch.php/tech:ogdf-snapshot-2015-12-04.zip
+  - unzip ogdf-snapshot.zip
 script: cppcheck --error-exitcode=2 -OGDF-snapshot TricComp.cpp
