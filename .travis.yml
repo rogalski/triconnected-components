@@ -3,5 +3,5 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq cppcheck
   - wget -q -O ogdf-snapshot.zip http://www.ogdf.net/lib/exe/fetch.php/tech:ogdf-snapshot-2015-12-04.zip
-  - unzip ogdf-snapshot.zip -qq
+  - unzip -qq ogdf-snapshot.zip 
 script: cppcheck --error-exitcode=2 -IOGDF-snapshot TricComp.cpp
