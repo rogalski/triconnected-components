@@ -28,7 +28,7 @@ GNU General Public License v3.0.
 
 3. Build libraries
 
-        cd ogdf-snapshot
+        cd OGDF-snapshot
         cmake .
         make
     
