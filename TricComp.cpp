@@ -13,11 +13,9 @@ static const bool checkComp = false;
 void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n) {
     mwIndex i, j, *jc, *ir;
 
-    // Create nodes
-    std::vector <ogdf::node> nodes;
-    nodes.reserve(n);
-    for (i = 0; i < n; i++) {
-        nodes.push_back(G.newNode());
+    ogdf::node *nodes = (ogdf::node *) mxMalloc(n * sizeof(ogdf::node));
+    for (unsigned int i = 0; i < n; i++) {
+        nodes[i] = G.newNode(i);
     }
 
     // Find MATLAB's matrix structure to iterate over egdes
@@ -30,27 +28,7 @@ void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n)
             if (ir[j] <= i) {
                 continue;
             }
-            G.newEdge(nodes.at(i), nodes.at(ir[j]));
-        }
-    }
-}
-
-inline bool shouldTriconnectedComponentBeSkipped(ogdf::TricComp::CompStruct &c) {
-    // TODO: Some components has zero edges, why?
-    return c.m_edges.empty();
-}
-
-inline bool isEdgeVirtual(ogdf::TricComp &comp, ogdf::edge e) {
-    return comp.m_pGC->original(e) == 0;
-}
-
-void setValueInSparseMatrix(const mwIndex row, const mwIndex col, const double value, const mxArray *matrix) {
-    mwIndex *jc = mxGetJc(matrix);
-    mwIndex *ir = mxGetIr(matrix);
-    double *pr = mxGetPr(matrix);
-    for (mwIndex i = jc[col]; i < jc[col + 1]; i++) {
-        if (ir[i] == row) {
-            pr[i] = value;
+            G.newEdge(nodes[i], nodes[ir[j]]);
         }
     }
 }
@@ -64,9 +42,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                           "Function requires one or two output arguments.");
     }
     mwIndex n = mxGetN(ADJ_MX);
-    if (!mxIsSparse(ADJ_MX) || n != mxGetM(ADJ_MX)) {
+    if (!mxIsDouble(ADJ_MX) || !mxIsSparse(ADJ_MX) || n != mxGetM(ADJ_MX)) {
         mexErrMsgIdAndTxt("MATLAB:triccomp:invarg",
-                          "First argument must be symmetric sparse matrix.");
+                          "First argument must be symmetric sparse double matrix.");
     }
 
     ogdf::Graph G;
@@ -83,12 +61,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     unsigned int numTriconnectedComponents = 0;
     for (unsigned int i = 0; i < tricComp.m_numComp; i++) {
         ogdf::TricComp::CompStruct component = tricComp.m_component[i];
-        if (!shouldTriconnectedComponentBeSkipped(component)) {
+        if (!component.m_edges.empty()) {
             numTriconnectedComponents += 1;
         }
     }
 
     CMP_MX = mxDuplicateArray(ADJ_MX);
+    mwIndex *jc = mxGetJc(CMP_MX);
+    mwIndex *ir = mxGetIr(CMP_MX);
+    double *pr = mxGetPr(CMP_MX);
+
     double *typPr;
     if (nlhs == 2) {
         TYP_MX = mxCreateDoubleMatrix(1, numTriconnectedComponents, mxREAL);
@@ -99,17 +81,28 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     for (unsigned int i = 0; i < tricComp.m_numComp; i++) {
         ogdf::TricComp::CompStruct component = tricComp.m_component[i];
         ogdf::List <ogdf::edge> edges = component.m_edges;
-        if (shouldTriconnectedComponentBeSkipped(component)) {
+        if (component.m_edges.empty()) {
             continue;
         }
         for (auto &e: edges) {
-            if (isEdgeVirtual(tricComp, e)) {
+            if (tricComp.m_pGC->original(e) == 0) {
                 continue;
             }
             mwIndex row = (mwIndex) e->source()->index();
             mwIndex col = (mwIndex) e->target()->index();
-            setValueInSparseMatrix(row, col, componentNum + 1, CMP_MX);
-            setValueInSparseMatrix(col, row, componentNum + 1, CMP_MX);
+            // Set componentNum in output matrix for edges
+            for (mwIndex j = jc[col]; j < jc[col + 1]; j++) {
+                if (ir[j] == row) {
+                    pr[j] = componentNum + 1;
+                }
+                break;
+            }
+            for (mwIndex j = jc[row]; j < jc[row + 1]; j++) {
+                if (ir[j] == col) {
+                    pr[j] = componentNum + 1;
+                }
+                break;
+            }
         }
         if (nlhs == 2) {
             typPr[componentNum] = component.m_type;

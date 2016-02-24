@@ -5,3 +5,4 @@ OGDF-snapshot
 *.mexw64
 *.zip
 *~
+.idea
