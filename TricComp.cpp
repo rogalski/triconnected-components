@@ -14,7 +14,7 @@ void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n)
     mwIndex i, j, *jc, *ir;
 
     // Create nodes
-    std::vector<ogdf::node> nodes;
+    std::vector <ogdf::node> nodes;
     nodes.reserve(n);
     for (i = 0; i < n; i++) {
         nodes.push_back(G.newNode());
@@ -25,7 +25,6 @@ void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n)
     ir = mxGetIr(adjacencyMatrix);
 
     // Iterate over upper triangular matrix.
-    // TODO: Refactor.
     for (i = 0; i < n; i++) {
         for (j = jc[i]; j < jc[i + 1]; j++) {
             if (ir[j] <= i) {
@@ -36,9 +35,24 @@ void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n)
     }
 }
 
-inline bool shouldTriconnectedComponentBeSkipped(ogdf::TricComp::CompStruct c) {
+inline bool shouldTriconnectedComponentBeSkipped(ogdf::TricComp::CompStruct &c) {
     // TODO: Some components has zero edges, why?
-    return c.m_edges.empty() || c.m_type == ogdf::TricComp::CompType::bond;
+    return c.m_edges.empty();
+}
+
+inline bool isEdgeVirtual(ogdf::TricComp &comp, ogdf::edge e) {
+    return comp.m_pGC->original(e) == 0;
+}
+
+void setValueInSparseMatrix(const mwIndex row, const mwIndex col, const double value, const mxArray *matrix) {
+    mwIndex *jc = mxGetJc(matrix);
+    mwIndex *ir = mxGetIr(matrix);
+    double *pr = mxGetPr(matrix);
+    for (mwIndex i = jc[col]; i < jc[col + 1]; i++) {
+        if (ir[i] == row) {
+            pr[i] = value;
+        }
+    }
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
@@ -65,21 +79,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     ogdf::TricComp tricComp(G);
     unsigned int foundComponents = tricComp.m_numComp;
 
-    // Get output matrix size. TODO: May it be done cleaner?
-    unsigned int maxTriconnectedComponentSize = 0;
+    // Get valid component count.
     unsigned int numTriconnectedComponents = 0;
-    for (unsigned int i = 0; i < foundComponents; i++) {
+    for (unsigned int i = 0; i < tricComp.m_numComp; i++) {
         ogdf::TricComp::CompStruct component = tricComp.m_component[i];
         if (!shouldTriconnectedComponentBeSkipped(component)) {
             numTriconnectedComponents += 1;
         }
-        if (component.m_edges.size() > maxTriconnectedComponentSize) {
-            maxTriconnectedComponentSize = component.m_edges.size();
-        };
     }
 
-    CMP_MX = mxCreateDoubleMatrix(2 * maxTriconnectedComponentSize, numTriconnectedComponents, mxREAL);
-    double *cmpPr = mxGetPr(CMP_MX);
+    CMP_MX = mxDuplicateArray(ADJ_MX);
     double *typPr;
     if (nlhs == 2) {
         TYP_MX = mxCreateDoubleMatrix(1, numTriconnectedComponents, mxREAL);
@@ -87,19 +96,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
 
     unsigned int componentNum = 0;
-    for (unsigned int i = 0; i < foundComponents; i++) {
+    for (unsigned int i = 0; i < tricComp.m_numComp; i++) {
         ogdf::TricComp::CompStruct component = tricComp.m_component[i];
         ogdf::List <ogdf::edge> edges = component.m_edges;
         if (shouldTriconnectedComponentBeSkipped(component)) {
             continue;
         }
-        unsigned j = 0;
         for (auto &e: edges) {
-            int row = e->source()->index();
-            int col = e->target()->index();
-            cmpPr[componentNum * 2 * maxTriconnectedComponentSize + 2 * j] = row + 1;
-            cmpPr[componentNum * 2 * maxTriconnectedComponentSize + 2 * j + 1] = col + 1;
-            j++;
+            if (isEdgeVirtual(tricComp, e)) {
+                continue;
+            }
+            mwIndex row = (mwIndex) e->source()->index();
+            mwIndex col = (mwIndex) e->target()->index();
+            setValueInSparseMatrix(row, col, componentNum + 1, CMP_MX);
+            setValueInSparseMatrix(col, row, componentNum + 1, CMP_MX);
         }
         if (nlhs == 2) {
             typPr[componentNum] = component.m_type;
