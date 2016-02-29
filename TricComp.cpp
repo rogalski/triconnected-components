@@ -94,14 +94,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
             for (mwIndex j = jc[col]; j < jc[col + 1]; j++) {
                 if (ir[j] == row) {
                     pr[j] = componentNum + 1;
+                    break;
                 }
-                break;
             }
             for (mwIndex j = jc[row]; j < jc[row + 1]; j++) {
                 if (ir[j] == col) {
                     pr[j] = componentNum + 1;
+                    break;
                 }
-                break;
             }
         }
         if (nlhs == 2) {
