@@ -7,6 +7,7 @@
 #define ADJ_MX (prhs[0])
 #define CMP_MX (plhs[0])
 #define TYP_MX (plhs[1])
+#define VIR_MX (plhs[2])
 
 static const bool checkComp = false;
 
@@ -15,7 +16,7 @@ void buildGraph(ogdf::Graph &G, const mxArray *adjacencyMatrix, const mwIndex n)
 
     ogdf::node *nodes = (ogdf::node *) mxMalloc(n * sizeof(ogdf::node));
     for (unsigned int i = 0; i < n; i++) {
-        nodes[i] = G.newNode(i);
+        nodes[i] = G.newNode(i + 1);
     }
 
     // Find MATLAB's matrix structure to iterate over egdes
@@ -37,9 +38,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (nrhs != 1) {
         mexErrMsgIdAndTxt("MATLAB:triccomp:nargin",
                           "Function requires single input argument.");
-    } else if (nlhs != 1 && nlhs != 2) {
+    } else if (nlhs < 1 || nlhs > 3) {
         mexErrMsgIdAndTxt("MATLAB:triccomp:nargout",
-                          "Function requires one or two output arguments.");
+                          "Function requires one, two or three output arguments.");
     }
     mwIndex n = mxGetN(ADJ_MX);
     if (!mxIsDouble(ADJ_MX) || !mxIsSparse(ADJ_MX) || n != mxGetM(ADJ_MX)) {
@@ -72,9 +73,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     double *pr = mxGetPr(CMP_MX);
 
     double *typPr;
-    if (nlhs == 2) {
+    if (nlhs >= 2) {
         TYP_MX = mxCreateDoubleMatrix(1, numTriconnectedComponents, mxREAL);
         typPr = mxGetPr(TYP_MX);
+    }
+    double *virPr;
+    if (nlhs >= 3) {
+        VIR_MX = mxCreateDoubleMatrix(2, numTriconnectedComponents, mxREAL);
+        virPr = mxGetPr(VIR_MX);
     }
 
     unsigned int componentNum = 0;
@@ -86,6 +92,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         }
         for (auto &e: edges) {
             if (tricComp.m_pGC->original(e) == 0) {
+                if (nlhs >= 3) {
+                    // This would lie for series component build from one standard edge and multiple virtual edges.
+                    // I'm not yet sure how to handle this.
+                    virPr[2 * componentNum] = e->source()->index() + 1;
+                    virPr[2 * componentNum + 1] = e->target()->index() + 1;
+                }
                 continue;
             }
             mwIndex row = (mwIndex) e->source()->index();
@@ -104,7 +116,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 }
             }
         }
-        if (nlhs == 2) {
+        if (nlhs > 1) {
             typPr[componentNum] = component.m_type;
         }
         componentNum++;

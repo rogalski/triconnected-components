@@ -5,6 +5,7 @@
 %
 %    C = TricComp(G)
 %    [C, T] = TricComp(G)
+%    [C, T, V] = TricComp(G)
 % 
 %  Input G is an N-by-N sparse matrix that represents adjacency graph.
 %  Output: 
@@ -20,10 +21,15 @@
 %    1 is series component.
 %    2 is rigid component.
 %
+%    V is a 2xM vector, which contains edge numbers related to component
+%    virtual edge.
+%    Warning! It currently fails for series components build from one
+%    standard edge and multiple virtual edges.
+%
 %  Single edge components may occur as either series or parallel components
 %  depending on virtual edges of graph.
 %
-%  Virtual edges are not included in exported output.
+%  Virtual edges are not included in C matrix.
 % 
 %  This is a MEX-file for MATLAB
 %  Copyright 2016 Lukasz Rogalski

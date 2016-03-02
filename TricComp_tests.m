@@ -32,9 +32,12 @@ C2Expected = [
     0 0 0 0 3 0 3;
     0 3 0 0 0 3 0
 ];
-[C2, T2] = TricComp(sparse(G2));
+V2Expected = [2 1 1; 1 2 2];
+[C2, T2, V2] = TricComp(sparse(G2));
 assert(isequal(C2, C2Expected));
 assert(isequal(T2, [2,0,1]));
+assert(isequal(V2, V2Expected));
+
 
 % Sample from Hopcroft and Tarjan paper
 G3 = [
