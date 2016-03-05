@@ -71,6 +71,6 @@ C3Expected = [
    12 12 12  0  0  0  0  0  0  0  0  0  0;
 ];
 
-[C3, T3] = TricComp(sparse(G3));
+[C3, T3, V3] = TricComp(sparse(G3));
 assert(isequal(C3, C3Expected));
 assert(isequal(T3, [2, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 2]));

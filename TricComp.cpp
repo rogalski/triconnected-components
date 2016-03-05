@@ -84,7 +84,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
 
     unsigned int componentNum = 0;
+    bool virtualNodeFound;
     for (unsigned int i = 0; i < tricComp.m_numComp; i++) {
+        virtualNodeFound = false;
         ogdf::TricComp::CompStruct component = tricComp.m_component[i];
         ogdf::List <ogdf::edge> edges = component.m_edges;
         if (component.m_edges.empty()) {
@@ -93,11 +95,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         for (auto &e: edges) {
             if (tricComp.m_pGC->original(e) == 0) {
                 if (nlhs >= 3) {
-                    // This would lie for series component build from one standard edge and multiple virtual edges.
-                    // I'm not yet sure how to handle this.
-                    virPr[2 * componentNum] = e->source()->index() + 1;
-                    virPr[2 * componentNum + 1] = e->target()->index() + 1;
+                    unsigned int source = e->source()->index() + 1;
+                    unsigned int target = e->target()->index() + 1;
+                    if(!virtualNodeFound) {
+                        virPr[2 * componentNum] = source;
+                        virPr[2 * componentNum + 1] = target;
+                    } else if (!(virPr[2 * componentNum] == source && virPr[2 * componentNum + 1] == target) || (virPr[2 * componentNum] == target && virPr[2 * componentNum + 1] == source)) {
+                        virPr[2 * componentNum] = 0;
+                        virPr[2 * componentNum + 1] = 0;
+                    }
                 }
+                virtualNodeFound = true;
                 continue;
             }
             mwIndex row = (mwIndex) e->source()->index();
